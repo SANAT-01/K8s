@@ -1,0 +1,48 @@
+apiVersion: apps/v1              # which Kubernetes API to use
+kind: Deployment                 # the TYPE of object being defined
+metadata:
+  name: my-app                   # the deployment's name
+spec:
+  replicas: 2                    # DESIRED STATE: 2 pods
+  selector:
+    matchLabels:
+      app: my-app                # how the deployment FINDS its pods
+  template:                      # ---- how each POD should look ----
+    metadata:
+      labels:
+        app: my-app              # label added to EVERY pod created
+    spec:
+      containers:
+        - name: my-app
+          image: embarkx/hello-node           # the Docker image to run
+          ports:
+            - containerPort: 3000  # port the app listens on
+          env:
+          - name: APP_MESSAGE
+            valueFrom: # ← not "value"
+              configMapKeyRef:
+                name: app-config # the ConfigMap's name
+                key: app_message # the key inside it
+          - name: ENV_VALUE
+            valueFrom:
+              configMapKeyRef:
+                name: app-config
+                key: env_value
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef: # ← different ref type
+                name: db-secret
+                key: db_password
+---
+apiVersion: v1                   # core Kubernetes API
+kind: Service                    # this time: a Service, not Deployment
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app                  # sends traffic to pods with THIS label
+  type: NodePort
+  ports:
+    - port: 3000                   # the SERVICE port
+      targetPort: 3000             # the CONTAINER port
+      nodePort: 32000            # the port on YOUR MACHINE

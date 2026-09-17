@@ -1,0 +1,43 @@
+apiVersion: apps/v1              # which Kubernetes API to use
+kind: Deployment                 # the TYPE of object being defined
+metadata:
+  name: tax-a           # the deployment's name
+spec:
+  replicas: 1                    # DESIRED STATE: 1 pod
+  selector:
+    matchLabels:
+      app: tax-a                # how the deployment FINDS its pods
+  template:                      # ---- how each POD should look ----
+    metadata:
+      labels:
+        app: tax-a              # label added to EVERY pod created
+    spec:
+      containers:
+        - name: tax-a
+          image: embarkx/tax-service-a           # the Docker image to run
+          ports:
+            - containerPort: 3000  # port the app listens on
+          env:
+          - name: TAX_SERVICE_URL
+            valueFrom: # ← not "value"
+              configMapKeyRef:
+                name: app-config # the ConfigMap's name
+                key: tax_service_url # the key inside it
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef: # ← different ref type
+                name: db-secret
+                key: db_password
+---
+apiVersion: v1                   # core Kubernetes API
+kind: Service                    # this time: a Service, not Deployment
+metadata:
+  name: tax-a-service
+spec:
+  selector:
+    app: tax-a                  # sends traffic to pods with THIS label
+  type: NodePort
+  ports:
+    - port: 3000                   # the SERVICE port
+      targetPort: 3000             # the CONTAINER port
+      nodePort: 32000            # the port on YOUR MACHINE
