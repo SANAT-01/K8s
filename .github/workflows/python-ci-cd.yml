@@ -70,8 +70,7 @@ jobs:
           context: python-app
           push: true
           tags: |
-            ${{ env.IMAGE }}:${{ steps.tag.outputs.tag }}
-            ${{ env.IMAGE }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/python-demo-app:latest
 
   # Roll the new image out to the dev cluster.
   deploy-dev:
