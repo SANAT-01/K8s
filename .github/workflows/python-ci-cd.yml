@@ -73,16 +73,16 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/python-demo-app:latest
 
   # Roll the new image out to the dev cluster.
-  deploy-dev:
-    runs-on: self-hosted # must run where kubectl can reach your dev cluster
-    needs: build-and-push
-    environment: development
-    steps:
-      - uses: actions/checkout@v4
+  # deploy-dev:
+  #   runs-on: self-hosted # must run where kubectl can reach your dev cluster
+  #   needs: build-and-push
+  #   environment: development
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Deploy to dev cluster
-        run: |
-          # k8s.yaml ships with a placeholder image ref; swap in the tag we just built and pushed.
-          sed "s|ghcr.io/OWNER/python-demo-app:latest|${{ env.IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}|" \
-            python-app/k8s.yaml | kubectl apply -f -
-          kubectl rollout status deployment/python-app --timeout=90s
+  #     - name: Deploy to dev cluster
+  #       run: |
+  #         # k8s.yaml ships with a placeholder image ref; swap in the tag we just built and pushed.
+  #         sed "s|ghcr.io/OWNER/python-demo-app:latest|${{ env.IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}|" \
+  #           python-app/k8s.yaml | kubectl apply -f -
+  #         kubectl rollout status deployment/python-app --timeout=90s
